@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "artnet",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MillerTechnologyPeru/ArtNet.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "417017fd1b8ffbf3449b854fd2bbf1ff31ff3ee6"
+      }
+    },
+    {
+      "identity" : "sacn",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dnadoba/sACN.git",
+      "state" : {
+        "revision" : "c2fdd09916bfc4aa8f4257af585b4cf2107494eb",
+        "version" : "0.2.1"
+      }
+    }
+  ],
+  "version" : 2
+}
