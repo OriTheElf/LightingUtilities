@@ -19,7 +19,7 @@ extension UInt8 {
 
 extension Data {
     
-    public var reversed: Data {
+    var reversed: Data {
         var temp = self
         temp.reverse()
         return temp
@@ -30,16 +30,16 @@ extension Data {
         String(format: "%02hhX", byte)
     }
     
-    public var binaryString: String {
+    var binaryString: String {
         map(\.binaryString).joined()
     }
     
     /// 2进制转16进制字符串
-    public var hexString: String {
+    var hexString: String {
         map(hex).joined()
     }
     
-    public var intValue: Int {
+    var intValue: Int {
         hexString.intFromHex ?? 0
     }
 }
@@ -83,12 +83,12 @@ extension BinaryInteger {
     }
     
     /// 二进制
-    public var data: Data {
+    var data: Data {
         dataInBytes(byteSize)
     }
     
     /// 字节翻转过的二进制
-    public var byteFlippedData: Data {
+    var byteFlippedData: Data {
         byteFlippedDataInBytes(byteSize)
     }
     
@@ -119,11 +119,11 @@ extension BinaryInteger {
         MemoryLayout.size(ofValue: self)
     }
     
-    public var byteHexString: String {
+    var byteHexString: String {
         hexString(2)
     }
     
-    public func hexString(_ minLength: Int = 2) -> String {
+    func hexString(_ minLength: Int = 2) -> String {
         String(format: "%0\(minLength)X", self.int)
     }
     
@@ -197,7 +197,7 @@ extension Data {
         return String(characters)
     }
     
-    public static func artNzs(sequence: UInt8, for net: UInt8, subUni: UInt8, data: Data) -> Data {
+    static func artNzs(sequence: UInt8, for net: UInt8, subUni: UInt8, data: Data) -> Data {
         /// 参考: https://art-net.org.uk/how-it-works/streaming-packets/artnzs-packet-definition/
         let opCode: UInt16 = 0x5200
         let dataLenth = data.count.uInt16
@@ -289,7 +289,7 @@ extension StringProtocol {
     
     typealias Byte = UInt8
     
-    public var hexToBinary: Data {
+    var hexToBinary: Data {
         var start = startIndex
         /// 两个16进制位为1个字节
         let byteArray = stride(from: 0, to: count, by: 2)
