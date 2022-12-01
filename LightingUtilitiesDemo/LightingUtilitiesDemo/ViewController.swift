@@ -7,11 +7,13 @@
 
 import UIKit
 import LightingUtilities
+import ArtNet
 
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        guard let input = BLEChannelInput(range: 0...3, inputs: []) else { return }
     }
 }
 

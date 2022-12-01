@@ -13,6 +13,7 @@
 		DE33C2FF2938855D00B0804A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DE33C2FD2938855D00B0804A /* Main.storyboard */; };
 		DE33C3012938855E00B0804A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE33C3002938855E00B0804A /* Assets.xcassets */; };
 		DE33C3042938855E00B0804A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DE33C3022938855E00B0804A /* LaunchScreen.storyboard */; };
+		DE3B7A302938A2D200DF24A8 /* LightingUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = DE3B7A2F2938A2D200DF24A8 /* LightingUtilities */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,7 +25,7 @@
 		DE33C3002938855E00B0804A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DE33C3032938855E00B0804A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		DE33C3052938855E00B0804A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DE33C30B293885B200B0804A /* LightingUtilities */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = LightingUtilities; path = ../LightingUtilities; sourceTree = "<group>"; };
+		DE3B7A2D2938A2AC00DF24A8 /* LightingUtilities */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = LightingUtilities; path = ../LightingUtilities; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DE3B7A302938A2D200DF24A8 /* LightingUtilities in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,9 +43,10 @@
 		DE33C2EB2938855D00B0804A = {
 			isa = PBXGroup;
 			children = (
-				DE33C30B293885B200B0804A /* LightingUtilities */,
+				DE3B7A2D2938A2AC00DF24A8 /* LightingUtilities */,
 				DE33C2F62938855D00B0804A /* LightingUtilitiesDemo */,
 				DE33C2F52938855D00B0804A /* Products */,
+				DE3B7A2E2938A2D200DF24A8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +72,13 @@
 			path = LightingUtilitiesDemo;
 			sourceTree = "<group>";
 		};
+		DE3B7A2E2938A2D200DF24A8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -85,6 +95,9 @@
 			dependencies = (
 			);
 			name = LightingUtilitiesDemo;
+			packageProductDependencies = (
+				DE3B7A2F2938A2D200DF24A8 /* LightingUtilities */,
+			);
 			productName = LightingUtilitiesDemo;
 			productReference = DE33C2F42938855D00B0804A /* LightingUtilitiesDemo.app */;
 			productType = "com.apple.product-type.application";
@@ -360,6 +373,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DE3B7A2F2938A2D200DF24A8 /* LightingUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LightingUtilities;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DE33C2EC2938855D00B0804A /* Project object */;
 }
