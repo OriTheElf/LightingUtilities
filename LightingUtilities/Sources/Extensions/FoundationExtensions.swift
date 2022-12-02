@@ -7,7 +7,64 @@
 
 import Foundation
 
+let artNetProtocolVersion: UInt16 = 14
+
 infix operator <<- : MultiplicationPrecedence
+
+extension Array where Element: Equatable {
+    
+    @discardableResult
+    /// 替换指定元素
+    /// - Parameter newElement: 新元素
+    /// - Returns: 是否替换成功
+    public mutating func replace(
+        with newElement: Element,
+        if prediction: (_ old: Element, _ new: Element) -> Bool = { $0 == $1 }
+    ) -> Bool {
+        let index = firstIndex { oldElement in
+            prediction(oldElement, newElement)
+        }
+        if let index {
+            let range = index..<index + 1
+            let updated = [newElement]
+            replaceSubrange(range, with: updated)
+            return true
+        } else {
+            append(newElement)
+            return false
+        }
+    }
+    
+    @discardableResult
+    /// 移除指定元素
+    /// - Parameter element: 要移除的元素
+    /// - Returns: 更新后的数组
+    public mutating func remove(_ element: Element) -> Array {
+        if let foundIndex = firstIndex(of: element) {
+            remove(at: foundIndex)
+        }
+        return self
+    }
+}
+
+extension Array where Element : Hashable {
+    
+    public mutating func appendUnique<S>(contentsOf newElements: S) where Element == S.Element, S : Sequence {
+        newElements.forEach { element in
+            appendUnique(element)
+        }
+    }
+    
+    /// 添加唯一的元素
+    /// - Parameter newElement: 遵循Hashable的元素
+    public mutating func appendUnique(_ newElement: Element) {
+        let isNotUnique = contains { element in
+            element.hashValue == newElement.hashValue
+        }
+        guard !isNotUnique else { return }
+        append(newElement)
+    }
+}
 
 extension UInt8 {
     var binaryString: String {
@@ -15,7 +72,6 @@ extension UInt8 {
         return repeatElement("0", count: 8 - binary.count) + binary
     }
 }
-
 
 extension Data {
     
@@ -30,18 +86,101 @@ extension Data {
         String(format: "%02hhX", byte)
     }
     
-    var binaryString: String {
+    public var binaryString: String {
         map(\.binaryString).joined()
     }
     
     /// 2进制转16进制字符串
-    var hexString: String {
+    public var hexString: String {
         map(hex).joined()
     }
     
-    var intValue: Int {
+    public var intValue: Int {
         hexString.intFromHex ?? 0
     }
+}
+
+
+extension Data {
+    
+    var ipAddress: String {
+        guard count == 4 else { return "" }
+        return map(String.init).joined(separator: ".")
+    }
+    
+    var asciiString: String {
+        let characters = compactMap { element -> Character? in
+            guard element > 0 else { return nil }
+            let unicodeScalar = UnicodeScalar(element)
+            return Character(unicodeScalar)
+        }
+        return String(characters)
+    }
+    
+    static func artNzs(sequence: UInt8, for net: UInt8, subUni: UInt8, data: Data) -> Data {
+        /// 参考: https://art-net.org.uk/how-it-works/streaming-packets/artnzs-packet-definition/
+        let opCode: UInt16 = 0x5200
+        let dataLenth = data.count.uInt16
+        
+        /// The Length field can be set to any even value in the range 2 – 512.
+        guard dataLenth.isMultiple(of: 2) else {
+            assertionFailure("数据长度必须为偶数")
+            return Data()
+        }
+        let lengthHi = dataLenth >> 8
+        let lengthLo = dataLenth & 0xFF
+        let dataBuilder = [
+            data,
+            lengthLo.uInt8.data,
+            lengthHi.uInt8.data,
+            net.data,
+            subUni.data,
+            sequence.data,
+            artNetProtocolVersion.byteFlippedData,
+            opCode.data,
+            artNet
+        ]
+        return dataBuilder.reduce(Data(), +)
+    }
+    
+    var artSync: Data {
+        let opCode: UInt16 = 0x5200
+        let aux: UInt16 = 0x0
+        
+        let data = [
+            aux.data,
+            artNetProtocolVersion.byteFlippedData,
+            opCode.data,
+            Data.artNet
+        ]
+        return data.reduce(Data(), +)
+    }
+    
+    var artPollData: Data {
+        
+        /// 参考: https://art-net.org.uk/how-it-works/discovery-packets/artpoll/
+        let opCode: UInt16 = 0x2000
+        let flags: UInt8 = 0x06
+        let priority: UInt8 = 0x00
+        
+        let data = [
+            priority.data,
+            flags.data,
+            artNetProtocolVersion.byteFlippedData,
+            opCode.data,
+            Data.artNet
+        ]
+        return data.reduce(Data(), +)
+    }
+    
+    static let artNet: Data = {
+        let artNet = "Art-Net"
+        let asciiValues = artNet.compactMap(\.asciiValue) + [0]
+        let asciiData = asciiValues.reversed()
+            .map(\.data)
+            .reduce(Data(), +)
+        return asciiData
+    }()
 }
 
 extension BinaryInteger {
@@ -74,21 +213,21 @@ extension BinaryInteger {
         UInt32(truncatingIfNeeded: self)
     }
     
-    var uInt16: UInt16 {
+    public var uInt16: UInt16 {
         UInt16(truncatingIfNeeded: self)
     }
     
-    var uInt8: UInt8 {
+    public var uInt8: UInt8 {
         UInt8(truncatingIfNeeded: self)
     }
     
     /// 二进制
-    var data: Data {
+    public var data: Data {
         dataInBytes(byteSize)
     }
     
     /// 字节翻转过的二进制
-    var byteFlippedData: Data {
+    public var byteFlippedData: Data {
         byteFlippedDataInBytes(byteSize)
     }
     
@@ -179,90 +318,6 @@ extension String {
     }
 }
 
-let artNetProtocolVersion: UInt16 = 14
-
-extension Data {
-    
-    var ipAddress: String {
-        guard count == 4 else { return "" }
-        return map(String.init).joined(separator: ".")
-    }
-    
-    var asciiString: String {
-        let characters = compactMap { element -> Character? in
-            guard element > 0 else { return nil }
-            let unicodeScalar = UnicodeScalar(element)
-            return Character(unicodeScalar)
-        }
-        return String(characters)
-    }
-    
-    static func artNzs(sequence: UInt8, for net: UInt8, subUni: UInt8, data: Data) -> Data {
-        /// 参考: https://art-net.org.uk/how-it-works/streaming-packets/artnzs-packet-definition/
-        let opCode: UInt16 = 0x5200
-        let dataLenth = data.count.uInt16
-        
-        /// The Length field can be set to any even value in the range 2 – 512.
-        guard dataLenth.isMultiple(of: 2) else {
-            assertionFailure("数据长度必须为偶数")
-            return Data()
-        }
-        let lengthHi = dataLenth >> 8
-        let lengthLo = dataLenth & 0xFF
-        let dataBuilder = [
-            data,
-            lengthLo.uInt8.data,
-            lengthHi.uInt8.data,
-            net.data,
-            subUni.data,
-            sequence.data,
-            artNetProtocolVersion.byteFlippedData,
-            opCode.data,
-            artNet
-        ]
-        return dataBuilder.reduce(Data(), +)
-    }
-    
-    var artSync: Data {
-        let opCode: UInt16 = 0x5200
-        let aux: UInt16 = 0x0
-        
-        let data = [
-            aux.data,
-            artNetProtocolVersion.byteFlippedData,
-            opCode.data,
-            Data.artNet
-        ]
-        return data.reduce(Data(), +)
-    }
-    
-    var artPollData: Data {
-        
-        /// 参考: https://art-net.org.uk/how-it-works/discovery-packets/artpoll/
-        let opCode: UInt16 = 0x2000
-        let flags: UInt8 = 0x06
-        let priority: UInt8 = 0x00
-        
-        let data = [
-            priority.data,
-            flags.data,
-            artNetProtocolVersion.byteFlippedData,
-            opCode.data,
-            Data.artNet
-        ]
-        return data.reduce(Data(), +)
-    }
-    
-    static let artNet: Data = {
-        let artNet = "Art-Net"
-        let asciiValues = artNet.compactMap(\.asciiValue) + [0]
-        let asciiData = asciiValues.reversed()
-            .map(\.data)
-            .reduce(Data(), +)
-        return asciiData
-    }()
-}
-
 extension StringProtocol {
     
     var intValueFromHex: Int {
@@ -270,7 +325,7 @@ extension StringProtocol {
     }
     
     /// 将字符串按照十六进制转换成十进制
-    var intFromHex: Int? {
+    public var intFromHex: Int? {
         intFromRadix(16)
     }
     
@@ -301,5 +356,25 @@ extension StringProtocol {
                 return Byte(self[start...end], radix: 16)
             }
         return Data(byteArray)
+    }
+}
+
+extension Range {
+    
+    /// 判断左面的范围是否包含右面
+    /// - Returns: 包含则返回true, 否则返回false
+    static func ~=(lhs: Self, rhs: Self) -> Bool {
+        /// clamped -> Always return a smaller range
+        rhs.clamped(to: lhs) == rhs
+    }
+}
+
+extension ClosedRange {
+    
+    /// 判断左面的范围是否包含右面
+    /// - Returns: 包含则返回true, 否则返回false
+    static func ~=(lhs: Self, rhs: Self) -> Bool {
+        /// clamped -> Always return a smaller range
+        rhs.clamped(to: lhs) == rhs
     }
 }
