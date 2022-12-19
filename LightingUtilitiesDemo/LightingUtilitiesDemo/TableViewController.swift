@@ -23,6 +23,8 @@ class TableViewController: UITableViewController {
             performSegue(withIdentifier: "ble", sender: nil)
         case 1:
             performSegue(withIdentifier: "artNet", sender: nil)
+        case 2:
+            performSegue(withIdentifier: "sACN", sender: nil)
         default:
             break
         }

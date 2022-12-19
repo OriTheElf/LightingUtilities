@@ -50,10 +50,10 @@ extension Data {
 
 extension IPv4Address {
     
-    static var broadcast: IPv4Address {
+    static var broadcast: IPv4Address? {
         let ip = UIDevice.current.broadcastIP
         guard let ipv4 = IPv4Address(ip) else {
-            fatalError("BAD IP!")
+            return nil
         }
         return ipv4
     }
@@ -62,43 +62,51 @@ extension IPv4Address {
 final class Ethernet {
     static let shared = Ethernet()
     var didReceiveData: ((Data) -> Void)?
-    private lazy var ipv4Address = IPv4Address.broadcast
-    private lazy var host = NWEndpoint.Host.ipv4(ipv4Address)
-    private lazy var port: NWEndpoint.Port = 6454
     
     private lazy var nwQueue = DispatchQueue(label: "com.nw.connection.queue")
-    private lazy var nwSendConnection = NWConnection(host: host, port: port, using: .udp)
+    private var nwSendConnection: NWConnection?
     private var listener: NWListener?
     
     private init() {
-        nwSendConnection.start(queue: nwQueue)
         
-        /// 监听端口
-        do {
-            /// 定义参数
-            let params = NWParameters.udp
-            params.allowFastOpen = true
+        if let ipv4Address = IPv4Address.broadcast {
+            let host = NWEndpoint.Host.ipv4(ipv4Address)
+            let port: NWEndpoint.Port = 6454
+            let connection = NWConnection(host: host, port: port, using: .udp)
+            nwSendConnection = connection
+            connection.start(queue: nwQueue)
             
-            /// 创建
-            let listener = try NWListener(using: params, on: port)
-            listener.newConnectionHandler = {
-                [weak self, shadowListener = listener] connection in
-                if let self {
-                    self.prepareConnection(connection)
-                } else {
-                    connection.cancel()
-                    shadowListener.cancel()
+            /// 监听端口
+            do {
+                /// 定义参数
+                let params = NWParameters.udp
+                params.allowFastOpen = true
+                
+                /// 创建
+                let listener = try NWListener(using: params, on: port)
+                listener.newConnectionHandler = {
+                    [weak self, shadowListener = listener] connection in
+                    if let self {
+                        self.prepareConnection(connection)
+                    } else {
+                        connection.cancel()
+                        shadowListener.cancel()
+                    }
                 }
+                listener.start(queue: nwQueue)
+            } catch {
+                assertionFailure(error.localizedDescription)
             }
-            listener.start(queue: nwQueue)
-        } catch {
-            assertionFailure(error.localizedDescription)
         }
+        
+        
     }
     
     func send(_ data: Data) {
         print("send:", data.hexString)
-        nwSendConnection.send(content: data, completion: .idempotent)
+        if let nwSendConnection {
+            nwSendConnection.send(content: data, completion: .idempotent)
+        }
     }
     
     private func didReceiveData(_ data: Data) {
@@ -176,15 +184,89 @@ class SearchingArtNetNodesViewController: UITableViewController {
         ]
         let results = interfaces.map(UIDevice.current.getAddress)
         
-        let resultString = results
+        var resultString = results
             .enumerated()
             .map { index, item in
                 "\(interfaces[index].rawValue):" + "\(item.ip.orEmpty) - \(item.netmask.orEmpty)"
             }
             .joined(separator: "\n")
         
+        if let uuid = UIDevice.current.identifierForVendor?.uuidString {
+            resultString += "\nUUID:\(uuid)"
+        }
+        
+        let address = GetMACAddress()
+        resultString += "\nMac Address:\(address)"
+        
         performSegue(withIdentifier: "result", sender: resultString)
     }
+    
+    func GetMACAddress() -> String {
+        let address = getAddress()
+        let ipv6Address = GetMACAddressFromIPv6(ip: address ?? "")
+        print("ipv6:", address.orEmpty)
+        return ipv6Address
+    }
+    
+    func GetMACAddressFromIPv6(ip: String) -> String{
+        let IPStruct = IPv6Address(ip)
+        if(IPStruct == nil){
+            return ""
+        }
+        let extractedMAC = [
+            (IPStruct?.rawValue[8])! ^ 0b00000010,
+            IPStruct?.rawValue[9],
+            IPStruct?.rawValue[10],
+            IPStruct?.rawValue[13],
+            IPStruct?.rawValue[14],
+            IPStruct?.rawValue[15]
+        ]
+        let str = String(format: "%02X:%02X:%02X:%02X:%02X:%02X", extractedMAC[0] ?? 00,
+            extractedMAC[1] ?? 00,
+            extractedMAC[2] ?? 00,
+            extractedMAC[3] ?? 00,
+            extractedMAC[4] ?? 00,
+            extractedMAC[5] ?? 00)
+        return str
+    }
+    
+    func getAddress() -> String? {
+        var address: String?
+
+        // Get list of all interfaces on the local machine:
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddr) == 0 else { return nil }
+        guard let firstAddr = ifaddr else { return nil }
+
+        // For each interface ...
+        for ifptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
+            let interface = ifptr.pointee
+            
+            // Check IPv6 interface:
+            let addrFamily = interface.ifa_addr.pointee.sa_family
+            if addrFamily == UInt8(AF_INET6) {
+                // Check interface name:
+                let name = String(cString: interface.ifa_name)
+                if name.contains("ipsec") {
+                    print("接口名字:", name)
+                    // Convert interface address to a human readable string:
+                    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                    getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
+                                &hostname, socklen_t(hostname.count),
+                                nil, socklen_t(0), NI_NUMERICHOST)
+                    address = String(cString: hostname)
+                    let ipv6addr = IPv6Address(address ?? "::")
+                    if(ipv6addr?.isLinkLocal ?? false){
+                        return address
+                    }
+                }
+            }
+        }
+        freeifaddrs(ifaddr)
+
+        return address
+    }
+    
     override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         60
     }
