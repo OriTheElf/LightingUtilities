@@ -11,6 +11,75 @@ import LightingUtilities
 import ArtNet
 import Network
 
+extension String {
+    
+    static var tagMAC: String {
+        
+        func GetMACAddressFromIPv6(ip: String) -> String{
+            let IPStruct = IPv6Address(ip)
+            if(IPStruct == nil){
+                return ""
+            }
+            let extractedMAC = [
+                (IPStruct?.rawValue[8])! ^ 0b00000010,
+                IPStruct?.rawValue[9],
+                IPStruct?.rawValue[10],
+                IPStruct?.rawValue[13],
+                IPStruct?.rawValue[14],
+                IPStruct?.rawValue[15]
+            ]
+            let str = String(format: "%02X:%02X:%02X:%02X:%02X:%02X", extractedMAC[0] ?? 00,
+                extractedMAC[1] ?? 00,
+                extractedMAC[2] ?? 00,
+                extractedMAC[3] ?? 00,
+                extractedMAC[4] ?? 00,
+                extractedMAC[5] ?? 00)
+            return str
+        }
+        
+        func getAddress() -> String? {
+            var address: String?
+
+            // Get list of all interfaces on the local machine:
+            var ifaddr: UnsafeMutablePointer<ifaddrs>?
+            guard getifaddrs(&ifaddr) == 0 else { return nil }
+            guard let firstAddr = ifaddr else { return nil }
+
+            // For each interface ...
+            for ifptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
+                let interface = ifptr.pointee
+                
+                // Check IPv6 interface:
+                let addrFamily = interface.ifa_addr.pointee.sa_family
+                if addrFamily == UInt8(AF_INET6) {
+                    // Check interface name:
+                    let name = String(cString: interface.ifa_name)
+                    if name.contains("ipsec") {
+                        print("接口名字:", name)
+                        // Convert interface address to a human readable string:
+                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                        getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
+                                    &hostname, socklen_t(hostname.count),
+                                    nil, socklen_t(0), NI_NUMERICHOST)
+                        address = String(cString: hostname)
+                        let ipv6addr = IPv6Address(address ?? "::")
+                        if(ipv6addr?.isLinkLocal ?? false){
+                            return address
+                        }
+                    }
+                }
+            }
+            freeifaddrs(ifaddr)
+
+            return address
+        }
+        
+        let address = getAddress()
+        let macAddress = GetMACAddressFromIPv6(ip: address ?? "")
+        return macAddress
+    }
+}
+
 extension Publisher {
     
     func flatMapLatest<T: Publisher>(_ transform: @escaping (Output) -> T) -> Publishers.SwitchToLatest<T, Publishers.Map<Self, T>> where T.Failure == Failure {
