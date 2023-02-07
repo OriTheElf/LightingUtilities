@@ -20,7 +20,7 @@ final class sACNSearchCell: UITableViewCell {
     }
 }
 
-class sACNViewController: UITableViewController {
+class ACNSearchingViewController: UITableViewController {
 
     private weak var timer: Timer?
     private var ipAddresses: [IPv4Address] = [] {
