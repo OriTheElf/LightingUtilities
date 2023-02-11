@@ -7,10 +7,14 @@
 
 import UIKit
 import LightingUtilities
+import sACN
+import Network
 
 final class DetailController: UIViewController {
     
     @IBOutlet weak var collectionView: UICollectionView!
+    
+    var param: [String: String] = [:]
     
     var peripheral: TimoPeripheral?
     
@@ -29,6 +33,8 @@ final class DetailController: UIViewController {
     @IBOutlet weak var channelEnd: UITextField!
     @IBOutlet weak var defaultTf: UITextField!
     
+    var connection: Connection?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -45,6 +51,13 @@ final class DetailController: UIViewController {
         if let peripheral {
             TimoTwo.connect(peripheral) { result in
                 print("连接成功", result)
+            }
+        }
+        if let universe = param["universe"], let u = UInt16(universe) {
+            if let ip = param["ip_address"], let ipv4 = IPv4Address(ip) {
+                connection = Connection(endpoint: .hostPort(host: .ipv4(ipv4), port: .sACN), universe: u)
+            } else {
+                connection = Connection(universe: u)
             }
         }
     }
@@ -77,15 +90,18 @@ final class DetailController: UIViewController {
     }
     
     @IBAction func send() {
+        let sortedInputs = inputs.sorted { kv1, kv2 in
+            kv1.key.row < kv2.key.row
+        }
+        let finalInputs = sortedInputs.map(\.value)
         if let peripheral {
-            let sortedInputs = inputs.sorted { kv1, kv2 in
-                kv1.key.row < kv2.key.row
-            }
-            let finalInputs = sortedInputs.map(\.value)
             guard let input = BLEChannelInput(range: channelRange, inputs: finalInputs) else { return }
             TimoTwo.sendChannelInputs(input, to: peripheral) { result in
                 print(result)
             }
+        } else if let connection {
+            let data = Data(finalInputs)
+            connection.sendDMXData(data)
         }
     }
     

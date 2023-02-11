@@ -24,7 +24,8 @@ class TableViewController: UITableViewController {
         case 1:
             performSegue(withIdentifier: "artNet", sender: nil)
         case 2:
-            performSegue(withIdentifier: "sACN", sender: nil)
+            //performSegue(withIdentifier: "sACN", sender: nil)
+            performSegue(withIdentifier: "prepare", sender: nil)
         default:
             break
         }

@@ -13,6 +13,7 @@
 		DE33C3012938855E00B0804A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE33C3002938855E00B0804A /* Assets.xcassets */; };
 		DE33C3042938855E00B0804A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DE33C3022938855E00B0804A /* LaunchScreen.storyboard */; };
 		DE3B7A302938A2D200DF24A8 /* LightingUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = DE3B7A2F2938A2D200DF24A8 /* LightingUtilities */; };
+		DE8219FC2997868800666210 /* ACNPrepareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8219FB2997868800666210 /* ACNPrepareViewController.swift */; };
 		DE86C039293B37F0001A1F1B /* ArtNetNodeDetailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE86C038293B37F0001A1F1B /* ArtNetNodeDetailController.swift */; };
 		DEB6BDE32940736800F60ADD /* ResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB6BDE22940736800F60ADD /* ResultViewController.swift */; };
 		DECB24B529542B9F005391A9 /* ACNSearchingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DECB24B429542B9F005391A9 /* ACNSearchingViewController.swift */; };
@@ -35,6 +36,7 @@
 		DE33C3032938855E00B0804A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		DE33C3052938855E00B0804A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DE3B7A2D2938A2AC00DF24A8 /* LightingUtilities */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = LightingUtilities; path = ../LightingUtilities; sourceTree = "<group>"; };
+		DE8219FB2997868800666210 /* ACNPrepareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ACNPrepareViewController.swift; sourceTree = "<group>"; };
 		DE86C038293B37F0001A1F1B /* ArtNetNodeDetailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtNetNodeDetailController.swift; sourceTree = "<group>"; };
 		DEB6BDE22940736800F60ADD /* ResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultViewController.swift; sourceTree = "<group>"; };
 		DECB24B429542B9F005391A9 /* ACNSearchingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ACNSearchingViewController.swift; sourceTree = "<group>"; };
@@ -65,6 +67,7 @@
 			children = (
 				DECB24B429542B9F005391A9 /* ACNSearchingViewController.swift */,
 				DE0F29772991F08200D0BC99 /* ACNTableViewController.swift */,
+				DE8219FB2997868800666210 /* ACNPrepareViewController.swift */,
 			);
 			path = ACN;
 			sourceTree = "<group>";
@@ -210,6 +213,7 @@
 				DEED51AF29398E4E00A6248D /* SearchingArtNetNodesViewController.swift in Sources */,
 				DEED51B029398E4E00A6248D /* TableViewController.swift in Sources */,
 				DE86C039293B37F0001A1F1B /* ArtNetNodeDetailController.swift in Sources */,
+				DE8219FC2997868800666210 /* ACNPrepareViewController.swift in Sources */,
 				DECB24B529542B9F005391A9 /* ACNSearchingViewController.swift in Sources */,
 				DEED51B62939939C00A6248D /* ArtNetNodeCell.swift in Sources */,
 				DEED51AE29398E4E00A6248D /* DetailController.swift in Sources */,
